@@ -195,6 +195,24 @@ def expect_close(
         )
 
 
+def expect_between(
+    actual: float,
+    minimum: float,
+    maximum: float,
+    message: str | None = None,
+) -> None:
+    """Fail unless ``actual`` is in the inclusive ``minimum`` to ``maximum`` range."""
+    if not minimum <= maximum:
+        raise ValueError("minimum must be less than or equal to maximum")
+    if not minimum <= actual <= maximum:
+        _raise_failure(
+            message or "Value is outside the expected range",
+            expected=f"between {minimum!r} and {maximum!r}, inclusive",
+            actual=actual,
+            has_values=True,
+        )
+
+
 def expect_contains(container: object, item: object, message: str | None = None) -> None:
     """Fail unless ``item`` is present in ``container``."""
     try:

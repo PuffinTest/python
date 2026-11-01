@@ -45,6 +45,7 @@ The repository includes a runnable [basic example](examples/basic.py). To see a 
 - `expect_equal(actual, expected, message=None)` checks equality.
 - `expect_not_equal(actual, unexpected, message=None)` checks inequality.
 - `expect_close(actual, expected, *, rel_tol=1e-9, abs_tol=0.0, message=None)` checks numeric values using `math.isclose` semantics.
+- `expect_between(actual, minimum, maximum, message=None)` checks whether a number falls within an inclusive range. It raises `ValueError` if the bounds are reversed or unordered.
 - `expect_contains(container, item, message=None)` checks membership.
 - `expect_not_contains(container, item, message=None)` checks that an item is absent.
 - `expect_length(actual, expected, message=None)` checks the length of a sized value; `expect_empty` and `expect_not_empty` are shortcuts for zero and nonzero length.
@@ -130,6 +131,7 @@ For floating-point results, set an absolute tolerance when values may be near ze
 
 ```python
 expect_close(0.1 + 0.2, 0.3, abs_tol=1e-12)
+expect_between(18, 13, 19)
 ```
 
 Use regular-expression expectations to check text formats without comparing an entire string:
