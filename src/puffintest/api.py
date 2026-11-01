@@ -339,6 +339,22 @@ def expect_length(actual: Sized, expected: int, message: str | None = None) -> N
         )
 
 
+def expect_length_between(
+    actual: Sized, minimum: int, maximum: int, message: str | None = None
+) -> None:
+    """Fail unless ``actual`` has an inclusive number of items in the range."""
+    if minimum < 0 or maximum < 0 or minimum > maximum:
+        raise ValueError("length bounds must be nonnegative and ordered")
+    actual_length = len(actual)
+    if not minimum <= actual_length <= maximum:
+        _raise_failure(
+            message or "Value length is outside the expected range",
+            expected=f"length between {minimum} and {maximum}, inclusive",
+            actual=actual_length,
+            has_values=True,
+        )
+
+
 def expect_empty(actual: Sized, message: str | None = None) -> None:
     """Fail unless ``actual`` contains no items."""
     expect_length(actual, 0, message or "Expected an empty value")
