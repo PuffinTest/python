@@ -47,6 +47,7 @@ The repository includes a runnable [basic example](examples/basic.py). To see a 
 - `expect_close(actual, expected, *, rel_tol=1e-9, abs_tol=0.0, message=None)` checks numeric values using `math.isclose` semantics.
 - `expect_contains(container, item, message=None)` checks membership.
 - `expect_not_contains(container, item, message=None)` checks that an item is absent.
+- `expect_length(actual, expected, message=None)` checks the length of a sized value; `expect_empty` and `expect_not_empty` are shortcuts for zero and nonzero length.
 - `expect_matches(actual, pattern, message=None)` and `expect_not_matches(actual, pattern, message=None)` check whether a regular expression occurs in a string. They use Python's `re.search` behavior.
 - `expect_is(actual, expected, message=None)` checks object identity. `expect_none(actual, message=None)` and `expect_not_none(actual, message=None)` check for `None`.
 - `expect_instance(actual, expected_type, message=None)` checks with `isinstance`; `expect_type(actual, expected_type, message=None)` checks the exact type.
@@ -137,6 +138,16 @@ from puffintest import expect_matches, expect_not_matches
 
 expect_matches("order-4821 accepted", r"order-\d+ accepted")
 expect_not_matches("request failed", r"\b2xx\b")
+```
+
+Check collection sizes directly, or use the empty and non-empty shortcuts:
+
+```python
+from puffintest import expect_empty, expect_length, expect_not_empty
+
+expect_length(["alpha", "beta"], 2)
+expect_empty([])
+expect_not_empty({"user": "ada"})
 ```
 
 Example:

@@ -5,7 +5,7 @@ from __future__ import annotations
 import inspect
 import math
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Sized
 from dataclasses import dataclass
 from typing import Callable, TypeVar, overload
 
@@ -267,6 +267,35 @@ def expect_not_matches(actual: str, pattern: str, message: str | None = None) ->
             message or "Text unexpectedly matches the pattern",
             expected=f"text not matching {pattern!r}",
             actual=actual,
+            has_values=True,
+        )
+
+
+def expect_length(actual: Sized, expected: int, message: str | None = None) -> None:
+    """Fail unless ``actual`` has exactly ``expected`` items."""
+    actual_length = len(actual)
+    if actual_length != expected:
+        _raise_failure(
+            message or "Value has an unexpected length",
+            expected=expected,
+            actual=actual_length,
+            has_values=True,
+        )
+
+
+def expect_empty(actual: Sized, message: str | None = None) -> None:
+    """Fail unless ``actual`` contains no items."""
+    expect_length(actual, 0, message or "Expected an empty value")
+
+
+def expect_not_empty(actual: Sized, message: str | None = None) -> None:
+    """Fail unless ``actual`` contains at least one item."""
+    actual_length = len(actual)
+    if actual_length == 0:
+        _raise_failure(
+            message or "Expected a non-empty value",
+            expected="at least 1 item",
+            actual=actual_length,
             has_values=True,
         )
 
