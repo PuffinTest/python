@@ -50,7 +50,7 @@ The repository includes a runnable [basic example](examples/basic.py). To see a 
 - `expect_not_contains(container, item, message=None)` checks that an item is absent.
 - `expect_length(actual, expected, message=None)` checks the length of a sized value; `expect_empty` and `expect_not_empty` are shortcuts for zero and nonzero length.
 - `expect_matches(actual, pattern, message=None)` and `expect_not_matches(actual, pattern, message=None)` check whether a regular expression occurs in a string. They use Python's `re.search` behavior.
-- `expect_starts_with(actual, prefix, message=None)` and `expect_ends_with(actual, suffix, message=None)` check string prefixes and suffixes.
+- `expect_starts_with(actual, prefix, message=None)` and `expect_ends_with(actual, suffix, message=None)` check string prefixes and suffixes; `expect_not_starts_with` and `expect_not_ends_with` assert their absence.
 - `expect_is(actual, expected, message=None)` checks object identity. `expect_none(actual, message=None)` and `expect_not_none(actual, message=None)` check for `None`.
 - `expect_instance(actual, expected_type, message=None)` checks with `isinstance`; `expect_type(actual, expected_type, message=None)` checks the exact type.
 - `expect_true(actual, message=None)` and `expect_false(actual, message=None)` check truthiness.

@@ -311,6 +311,22 @@ def expect_ends_with(actual: str, suffix: str, message: str | None = None) -> No
         )
 
 
+def expect_not_starts_with(actual: str, prefix: str, message: str | None = None) -> None:
+    """Fail if ``actual`` starts with ``prefix``."""
+    if not isinstance(actual, str) or not isinstance(prefix, str):
+        raise TypeError("actual and prefix must be strings")
+    if actual.startswith(prefix):
+        _raise_failure(message or "Text unexpectedly starts with the prefix", expected=f"text not starting with {prefix!r}", actual=actual, has_values=True)
+
+
+def expect_not_ends_with(actual: str, suffix: str, message: str | None = None) -> None:
+    """Fail if ``actual`` ends with ``suffix``."""
+    if not isinstance(actual, str) or not isinstance(suffix, str):
+        raise TypeError("actual and suffix must be strings")
+    if actual.endswith(suffix):
+        _raise_failure(message or "Text unexpectedly ends with the suffix", expected=f"text not ending with {suffix!r}", actual=actual, has_values=True)
+
+
 def expect_length(actual: Sized, expected: int, message: str | None = None) -> None:
     """Fail unless ``actual`` has exactly ``expected`` items."""
     actual_length = len(actual)
