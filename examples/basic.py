@@ -5,7 +5,9 @@ from puffintest import (
     expect_close,
     expect_equal,
     expect_instance,
+    expect_empty,
     expect_length_between,
+    expect_not_empty,
     expect_raises,
     expect_true,
     discover_tests,
@@ -42,6 +44,8 @@ def doubling_matches(value, expected):
 def fractional_calculation_is_close():
     expect_close(0.1 + 0.2, 0.3, abs_tol=1e-12)
     expect_length_between(["puffin", "tern"], 1, 3)
+    expect_empty([])
+    expect_not_empty(["puffin"])
 
 
 if __name__ == "__main__":
