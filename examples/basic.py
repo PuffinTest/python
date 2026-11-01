@@ -8,6 +8,7 @@ from puffintest import (
     expect_empty,
     expect_length_between,
     expect_not_empty,
+    expect_not_contains,
     expect_raises,
     expect_true,
     discover_tests,
@@ -20,6 +21,8 @@ from puffintest import (
 @test(name="title formatting", tags=("text", "fast"))
 def title_is_formatted():
     expect_equal("hello, puffin".title(), "Hello, Puffin")
+    expect_contains("puffin test", "test")
+    expect_not_contains("puffin test", "penguin")
 
 
 @test
