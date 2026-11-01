@@ -327,7 +327,10 @@ class _RaisesContext:
     def __enter__(self) -> _RaisesContext:
         return self
 
-    def __exit__(self, exception_type: object, exception: object, traceback: object) -> bool:
+    async def __aenter__(self) -> _RaisesContext:
+        return self
+
+    def _handle_exception(self, exception_type: object, exception: object) -> bool:
         if exception_type is None:
             _raise_failure(
                 self.message or f"Expected {self.expected.__name__} to be raised",
@@ -347,15 +350,24 @@ class _RaisesContext:
             )
         return False
 
+    def __exit__(self, exception_type: object, exception: object, traceback: object) -> bool:
+        return self._handle_exception(exception_type, exception)
+
+    async def __aexit__(
+        self, exception_type: object, exception: object, traceback: object
+    ) -> bool:
+        return self._handle_exception(exception_type, exception)
+
 
 def expect_raises(
     exception_type: type[Exception], message: str | None = None
 ) -> _RaisesContext:
     """Return a context manager that requires ``exception_type`` to be raised.
 
-    A matching exception is suppressed and made available as ``context.exception``.
-    An unexpected exception becomes a failed expectation; process-control
-    exceptions such as ``KeyboardInterrupt`` continue to propagate.
+    Works with both ``with`` and ``async with``. A matching exception is
+    suppressed and made available as ``context.exception``. An unexpected
+    exception becomes a failed expectation; process-control exceptions such
+    as ``KeyboardInterrupt`` continue to propagate.
     """
     if not isinstance(exception_type, type) or not issubclass(exception_type, Exception):
         raise TypeError("exception_type must be an Exception subclass")
