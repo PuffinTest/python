@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import math
+import re
 from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Callable, TypeVar, overload
@@ -230,6 +231,42 @@ def expect_not_contains(container: object, item: object, message: str | None = N
             message or "Item is unexpectedly present in the container",
             expected=f"a container not holding {item!r}",
             actual=container,
+            has_values=True,
+        )
+
+
+def expect_matches(actual: str, pattern: str, message: str | None = None) -> None:
+    """Fail unless ``pattern`` matches somewhere in ``actual``."""
+    if not isinstance(actual, str):
+        _raise_failure(
+            message or "Expected a string to match the pattern",
+            expected=f"text matching {pattern!r}",
+            actual=actual,
+            has_values=True,
+        )
+    if re.search(pattern, actual) is None:
+        _raise_failure(
+            message or "Text does not match the pattern",
+            expected=f"text matching {pattern!r}",
+            actual=actual,
+            has_values=True,
+        )
+
+
+def expect_not_matches(actual: str, pattern: str, message: str | None = None) -> None:
+    """Fail if ``pattern`` matches anywhere in ``actual``."""
+    if not isinstance(actual, str):
+        _raise_failure(
+            message or "Expected a string not to match the pattern",
+            expected=f"text not matching {pattern!r}",
+            actual=actual,
+            has_values=True,
+        )
+    if re.search(pattern, actual) is not None:
+        _raise_failure(
+            message or "Text unexpectedly matches the pattern",
+            expected=f"text not matching {pattern!r}",
+            actual=actual,
             has_values=True,
         )
 
