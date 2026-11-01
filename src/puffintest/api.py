@@ -1,0 +1,362 @@
+"""Test declarations and expectation helpers."""
+
+from __future__ import annotations
+
+import inspect
+import math
+from collections.abc import Iterable
+from dataclasses import dataclass
+from typing import Callable, TypeVar, overload
+
+T = TypeVar("T", bound=Callable[[], object])
+
+
+@dataclass(frozen=True)
+class TestCase:
+    """A named, zero-argument test case."""
+
+    name: str
+    function: Callable[[], object]
+    skip_reason: str | None = None
+    tags: frozenset[str] = frozenset()
+
+
+class AssertionFailure(AssertionError):
+    """An expectation failure with values and its call site."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        expected: object = None,
+        actual: object = None,
+        has_values: bool = False,
+        filename: str,
+        line: int,
+    ) -> None:
+        super().__init__(message)
+        self.message = message
+        self.expected = expected
+        self.actual = actual
+        self.has_values = has_values
+        self.filename = filename
+        self.line = line
+
+
+@overload
+def test(
+    function: T,
+    *,
+    name: str | None = None,
+    skip_reason: str | None = None,
+    tags: Iterable[str] = (),
+) -> TestCase: ...
+
+
+@overload
+def test(
+    *,
+    name: str | None = None,
+    skip_reason: str | None = None,
+    tags: Iterable[str] = (),
+) -> Callable[[T], TestCase]: ...
+
+
+def test(
+    function: T | None = None,
+    *,
+    name: str | None = None,
+    skip_reason: str | None = None,
+    tags: Iterable[str] = (),
+) -> TestCase | Callable[[T], TestCase]:
+    """Declare a function as a named test case.
+
+    The function must take no arguments. Use the returned ``TestCase`` with
+    :func:`puffintest.run_tests`. Set ``name`` to choose the displayed name,
+    or ``skip_reason`` to report the case as skipped without calling it.
+    """
+    normalized_tags = _normalize_tags(tags)
+
+    def decorate(target: T) -> TestCase:
+        display_name = (
+            name if name is not None else target.__name__.replace("_", " ")
+        )
+        return TestCase(display_name, target, skip_reason, normalized_tags)
+
+    if function is None:
+        return decorate
+    return decorate(function)
+
+
+def test_cases(
+    argument_sets: Iterable[tuple[object, ...]],
+    *,
+    name: str | None = None,
+    tags: Iterable[str] = (),
+) -> Callable[[Callable[..., object]], tuple[TestCase, ...]]:
+    """Build one named test case for each positional argument tuple.
+
+    The decorated function is called once per argument tuple. Each generated
+    case includes its one-based index and arguments in its displayed name.
+    """
+    def decorate(function: Callable[..., object]) -> tuple[TestCase, ...]:
+        normalized_tags = _normalize_tags(tags)
+        base_name = (
+            name if name is not None else function.__name__.replace("_", " ")
+        )
+        generated = []
+        for index, arguments in enumerate(argument_sets, start=1):
+            case_name = f"{base_name} [case {index}: {arguments!r}]"
+
+            def invoke(arguments: tuple[object, ...] = arguments) -> object:
+                return function(*arguments)
+
+            generated.append(TestCase(case_name, invoke, tags=normalized_tags))
+        return tuple(generated)
+
+    return decorate
+
+
+def _normalize_tags(tags: Iterable[str]) -> frozenset[str]:
+    if isinstance(tags, str):
+        raise TypeError("tags must be an iterable of tag names, not a string")
+    values = tuple(tags)
+    if any(not isinstance(tag, str) or not tag.strip() for tag in values):
+        raise ValueError("tags must contain nonempty strings")
+    return frozenset(tag.strip() for tag in values)
+
+
+def _raise_failure(
+    message: str,
+    *,
+    expected: object = None,
+    actual: object = None,
+    has_values: bool = False,
+) -> None:
+    frame = inspect.currentframe()
+    helper = frame.f_back if frame is not None else None
+    caller = helper.f_back if helper is not None else None
+    if caller is None:  # pragma: no cover - defensive fallback for unusual runtimes
+        filename, line = "<unknown>", 0
+    else:
+        filename, line = caller.f_code.co_filename, caller.f_lineno
+    raise AssertionFailure(
+        message,
+        expected=expected,
+        actual=actual,
+        has_values=has_values,
+        filename=filename,
+        line=line,
+    )
+
+
+def expect_equal(actual: object, expected: object, message: str | None = None) -> None:
+    """Fail unless ``actual`` equals ``expected``."""
+    if actual != expected:
+        _raise_failure(
+            message or "Values are not equal",
+            expected=expected,
+            actual=actual,
+            has_values=True,
+        )
+
+
+def expect_not_equal(actual: object, unexpected: object, message: str | None = None) -> None:
+    """Fail unless ``actual`` differs from ``unexpected``."""
+    if actual == unexpected:
+        _raise_failure(
+            message or "Values are unexpectedly equal",
+            expected=f"a value different from {unexpected!r}",
+            actual=actual,
+            has_values=True,
+        )
+
+
+def expect_close(
+    actual: float,
+    expected: float,
+    *,
+    rel_tol: float = 1e-9,
+    abs_tol: float = 0.0,
+    message: str | None = None,
+) -> None:
+    """Fail unless two numbers are close within the given tolerances.
+
+    Uses :func:`math.isclose` semantics. ``rel_tol`` sets the relative
+    tolerance; ``abs_tol`` is useful when comparing values near zero.
+    """
+    if not math.isclose(actual, expected, rel_tol=rel_tol, abs_tol=abs_tol):
+        _raise_failure(
+            message or f"Values are not close (rel_tol={rel_tol}, abs_tol={abs_tol})",
+            expected=expected,
+            actual=actual,
+            has_values=True,
+        )
+
+
+def expect_contains(container: object, item: object, message: str | None = None) -> None:
+    """Fail unless ``item`` is present in ``container``."""
+    try:
+        contains_item = item in container  # type: ignore[operator]
+    except TypeError as error:
+        _raise_failure(
+            message or f"Cannot check membership: {error}",
+            expected=f"a container holding {item!r}",
+            actual=container,
+            has_values=True,
+        )
+    if not contains_item:
+        _raise_failure(
+            message or "Item is not present in the container",
+            expected=f"a container holding {item!r}",
+            actual=container,
+            has_values=True,
+        )
+
+
+def expect_not_contains(container: object, item: object, message: str | None = None) -> None:
+    """Fail unless ``item`` is absent from ``container``."""
+    try:
+        contains_item = item in container  # type: ignore[operator]
+    except TypeError as error:
+        _raise_failure(
+            message or f"Cannot check membership: {error}",
+            expected=f"a container not holding {item!r}",
+            actual=container,
+            has_values=True,
+        )
+    if contains_item:
+        _raise_failure(
+            message or "Item is unexpectedly present in the container",
+            expected=f"a container not holding {item!r}",
+            actual=container,
+            has_values=True,
+        )
+
+
+def expect_is(actual: object, expected: object, message: str | None = None) -> None:
+    """Fail unless ``actual`` and ``expected`` are the same object."""
+    if actual is not expected:
+        _raise_failure(
+            message or "Values are not the same object",
+            expected=expected,
+            actual=actual,
+            has_values=True,
+        )
+
+
+def expect_none(actual: object, message: str | None = None) -> None:
+    """Fail unless ``actual`` is ``None``."""
+    if actual is not None:
+        _raise_failure(
+            message or "Expected None",
+            expected=None,
+            actual=actual,
+            has_values=True,
+        )
+
+
+def expect_not_none(actual: object, message: str | None = None) -> None:
+    """Fail unless ``actual`` is not ``None``."""
+    if actual is None:
+        _raise_failure(
+            message or "Expected a non-None value",
+            expected="not None",
+            actual=None,
+            has_values=True,
+        )
+
+
+def expect_instance(
+    actual: object, expected_type: type, message: str | None = None
+) -> None:
+    """Fail unless ``actual`` is an instance of ``expected_type``."""
+    if not isinstance(actual, expected_type):
+        _raise_failure(
+            message or f"Expected an instance of {expected_type.__name__}",
+            expected=expected_type,
+            actual=actual,
+            has_values=True,
+        )
+
+
+def expect_type(actual: object, expected_type: type, message: str | None = None) -> None:
+    """Fail unless ``type(actual)`` is exactly ``expected_type``."""
+    if type(actual) is not expected_type:
+        _raise_failure(
+            message or f"Expected exact type {expected_type.__name__}",
+            expected=expected_type,
+            actual=type(actual),
+            has_values=True,
+        )
+
+
+def expect_true(actual: object, message: str | None = None) -> None:
+    """Fail unless ``actual`` is truthy."""
+    if not actual:
+        _raise_failure(
+            message or "Expected a truthy value",
+            expected=True,
+            actual=actual,
+            has_values=True,
+        )
+
+
+def expect_false(actual: object, message: str | None = None) -> None:
+    """Fail unless ``actual`` is falsey."""
+    if actual:
+        _raise_failure(
+            message or "Expected a falsey value",
+            expected=False,
+            actual=actual,
+            has_values=True,
+        )
+
+
+def fail(message: str = "Explicit failure") -> None:
+    """Fail the current case with ``message``."""
+    _raise_failure(message)
+
+
+class _RaisesContext:
+    def __init__(self, expected: type[Exception], message: str | None) -> None:
+        self.expected = expected
+        self.message = message
+        self.exception: Exception | None = None
+
+    def __enter__(self) -> _RaisesContext:
+        return self
+
+    def __exit__(self, exception_type: object, exception: object, traceback: object) -> bool:
+        if exception_type is None:
+            _raise_failure(
+                self.message or f"Expected {self.expected.__name__} to be raised",
+                expected=self.expected.__name__,
+                actual="no exception",
+                has_values=True,
+            )
+        if isinstance(exception, self.expected):
+            self.exception = exception
+            return True
+        if isinstance(exception, Exception):
+            _raise_failure(
+                self.message or f"Expected {self.expected.__name__}, got {type(exception).__name__}",
+                expected=self.expected.__name__,
+                actual=type(exception).__name__,
+                has_values=True,
+            )
+        return False
+
+
+def expect_raises(
+    exception_type: type[Exception], message: str | None = None
+) -> _RaisesContext:
+    """Return a context manager that requires ``exception_type`` to be raised.
+
+    A matching exception is suppressed and made available as ``context.exception``.
+    An unexpected exception becomes a failed expectation; process-control
+    exceptions such as ``KeyboardInterrupt`` continue to propagate.
+    """
+    if not isinstance(exception_type, type) or not issubclass(exception_type, Exception):
+        raise TypeError("exception_type must be an Exception subclass")
+    return _RaisesContext(exception_type, message)
