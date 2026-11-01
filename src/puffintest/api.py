@@ -271,6 +271,28 @@ def expect_not_matches(actual: str, pattern: str, message: str | None = None) ->
         )
 
 
+def expect_starts_with(actual: str, prefix: str, message: str | None = None) -> None:
+    """Fail unless ``actual`` starts with ``prefix``."""
+    if not isinstance(actual, str) or not actual.startswith(prefix):
+        _raise_failure(
+            message or "Text does not start with the expected prefix",
+            expected=f"text starting with {prefix!r}",
+            actual=actual,
+            has_values=True,
+        )
+
+
+def expect_ends_with(actual: str, suffix: str, message: str | None = None) -> None:
+    """Fail unless ``actual`` ends with ``suffix``."""
+    if not isinstance(actual, str) or not actual.endswith(suffix):
+        _raise_failure(
+            message or "Text does not end with the expected suffix",
+            expected=f"text ending with {suffix!r}",
+            actual=actual,
+            has_values=True,
+        )
+
+
 def expect_length(actual: Sized, expected: int, message: str | None = None) -> None:
     """Fail unless ``actual`` has exactly ``expected`` items."""
     actual_length = len(actual)
