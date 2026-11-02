@@ -4,6 +4,8 @@ from puffintest import (
     expect_contains,
     expect_close,
     expect_finite,
+    expect_nan,
+    expect_not_nan,
     expect_equal,
     expect_instance,
     expect_empty,
@@ -55,6 +57,8 @@ def doubling_matches(value, expected):
 @test
 def fractional_calculation_is_close():
     expect_finite(3.14)
+    expect_nan(float("nan"))
+    expect_not_nan(3.14)
     expect_greater_than(5, 3)
     expect_less_than(2, 3)
     expect_at_least(3, 3)

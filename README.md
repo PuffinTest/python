@@ -46,6 +46,7 @@ The repository includes a runnable [basic example](examples/basic.py). To see a 
 - `expect_not_equal(actual, unexpected, message=None)` checks inequality.
 - `expect_close(actual, expected, *, rel_tol=1e-9, abs_tol=0.0, message=None)` and `expect_not_close` use `math.isclose` semantics and the same tolerances.
 - `expect_finite(actual, message=None)` rejects NaN and either infinity; `expect_not_finite` accepts those values and rejects finite numbers.
+- `expect_nan(actual, message=None)` accepts only NaN; `expect_not_nan` rejects NaN and accepts finite values or infinities.
 - `expect_greater_than` and `expect_less_than` check strict thresholds; `expect_at_least` and `expect_at_most` accept equality at the threshold.
 - `expect_between(actual, minimum, maximum, message=None)` checks an inclusive range. `expect_not_between(actual, minimum, maximum, message=None)` passes only when the value is outside that range. Both raise `ValueError` when bounds are reversed or unordered.
 - `expect_contains(container, item, message=None)` checks membership.

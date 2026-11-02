@@ -225,6 +225,18 @@ def expect_not_finite(actual: float, message: str | None = None) -> None:
         _raise_failure(message or "Value is unexpectedly finite", expected="NaN or infinity", actual=actual, has_values=True)
 
 
+def expect_nan(actual: float, message: str | None = None) -> None:
+    """Fail unless ``actual`` is NaN."""
+    if not math.isnan(actual):
+        _raise_failure(message or "Value is not NaN", expected="NaN", actual=actual, has_values=True)
+
+
+def expect_not_nan(actual: float, message: str | None = None) -> None:
+    """Fail if ``actual`` is NaN."""
+    if math.isnan(actual):
+        _raise_failure(message or "Value is unexpectedly NaN", expected="not NaN", actual=actual, has_values=True)
+
+
 def expect_between(
     actual: float,
     minimum: float,
