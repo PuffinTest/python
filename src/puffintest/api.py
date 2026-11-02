@@ -237,6 +237,18 @@ def expect_not_nan(actual: float, message: str | None = None) -> None:
         _raise_failure(message or "Value is unexpectedly NaN", expected="not NaN", actual=actual, has_values=True)
 
 
+def expect_infinite(actual: float, message: str | None = None) -> None:
+    """Fail unless ``actual`` is positive or negative infinity."""
+    if not math.isinf(actual):
+        _raise_failure(message or "Value is not infinite", expected="positive or negative infinity", actual=actual, has_values=True)
+
+
+def expect_not_infinite(actual: float, message: str | None = None) -> None:
+    """Fail if ``actual`` is positive or negative infinity."""
+    if math.isinf(actual):
+        _raise_failure(message or "Value is unexpectedly infinite", expected="not infinity", actual=actual, has_values=True)
+
+
 def expect_between(
     actual: float,
     minimum: float,
