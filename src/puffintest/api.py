@@ -213,6 +213,28 @@ def expect_between(
         )
 
 
+def expect_greater_than(actual: float, threshold: float, message: str | None = None) -> None:
+    """Fail unless ``actual`` is strictly greater than ``threshold``."""
+    if not actual > threshold:
+        _raise_failure(
+            message or "Value is not greater than the threshold",
+            expected=f"greater than {threshold!r}",
+            actual=actual,
+            has_values=True,
+        )
+
+
+def expect_less_than(actual: float, threshold: float, message: str | None = None) -> None:
+    """Fail unless ``actual`` is strictly less than ``threshold``."""
+    if not actual < threshold:
+        _raise_failure(
+            message or "Value is not less than the threshold",
+            expected=f"less than {threshold!r}",
+            actual=actual,
+            has_values=True,
+        )
+
+
 def expect_contains(container: object, item: object, message: str | None = None) -> None:
     """Fail unless ``item`` is present in ``container``."""
     try:
