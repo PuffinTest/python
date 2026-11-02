@@ -235,6 +235,28 @@ def expect_less_than(actual: float, threshold: float, message: str | None = None
         )
 
 
+def expect_at_least(actual: float, threshold: float, message: str | None = None) -> None:
+    """Fail unless ``actual`` is greater than or equal to ``threshold``."""
+    if not actual >= threshold:
+        _raise_failure(
+            message or "Value is below the minimum threshold",
+            expected=f"at least {threshold!r}",
+            actual=actual,
+            has_values=True,
+        )
+
+
+def expect_at_most(actual: float, threshold: float, message: str | None = None) -> None:
+    """Fail unless ``actual`` is less than or equal to ``threshold``."""
+    if not actual <= threshold:
+        _raise_failure(
+            message or "Value is above the maximum threshold",
+            expected=f"at most {threshold!r}",
+            actual=actual,
+            has_values=True,
+        )
+
+
 def expect_contains(container: object, item: object, message: str | None = None) -> None:
     """Fail unless ``item`` is present in ``container``."""
     try:

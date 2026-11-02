@@ -45,7 +45,7 @@ The repository includes a runnable [basic example](examples/basic.py). To see a 
 - `expect_equal(actual, expected, message=None)` checks equality.
 - `expect_not_equal(actual, unexpected, message=None)` checks inequality.
 - `expect_close(actual, expected, *, rel_tol=1e-9, abs_tol=0.0, message=None)` checks numeric values using `math.isclose` semantics.
-- `expect_greater_than(actual, threshold, message=None)` and `expect_less_than(actual, threshold, message=None)` check strict numeric thresholds.
+- `expect_greater_than` and `expect_less_than` check strict thresholds; `expect_at_least` and `expect_at_most` accept equality at the threshold.
 - `expect_between(actual, minimum, maximum, message=None)` checks whether a number falls within an inclusive range. It raises `ValueError` if the bounds are reversed or unordered.
 - `expect_contains(container, item, message=None)` checks membership.
 - `expect_not_contains(container, item, message=None)` checks that an item is absent.
