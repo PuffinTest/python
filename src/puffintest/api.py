@@ -195,6 +195,24 @@ def expect_close(
         )
 
 
+def expect_not_close(
+    actual: float,
+    expected: float,
+    *,
+    rel_tol: float = 1e-9,
+    abs_tol: float = 0.0,
+    message: str | None = None,
+) -> None:
+    """Fail if two numbers are close under :func:`math.isclose` semantics."""
+    if math.isclose(actual, expected, rel_tol=rel_tol, abs_tol=abs_tol):
+        _raise_failure(
+            message or f"Values are unexpectedly close (rel_tol={rel_tol}, abs_tol={abs_tol})",
+            expected=f"not close to {expected!r}",
+            actual=actual,
+            has_values=True,
+        )
+
+
 def expect_between(
     actual: float,
     minimum: float,

@@ -44,7 +44,7 @@ The repository includes a runnable [basic example](examples/basic.py). To see a 
 - `@test_cases(argument_sets, name=None, tags=())` creates one case per tuple of positional arguments. Each case name includes its index and argument values.
 - `expect_equal(actual, expected, message=None)` checks equality.
 - `expect_not_equal(actual, unexpected, message=None)` checks inequality.
-- `expect_close(actual, expected, *, rel_tol=1e-9, abs_tol=0.0, message=None)` checks numeric values using `math.isclose` semantics.
+- `expect_close(actual, expected, *, rel_tol=1e-9, abs_tol=0.0, message=None)` and `expect_not_close` use `math.isclose` semantics and the same tolerances.
 - `expect_greater_than` and `expect_less_than` check strict thresholds; `expect_at_least` and `expect_at_most` accept equality at the threshold.
 - `expect_between(actual, minimum, maximum, message=None)` checks an inclusive range. `expect_not_between(actual, minimum, maximum, message=None)` passes only when the value is outside that range. Both raise `ValueError` when bounds are reversed or unordered.
 - `expect_contains(container, item, message=None)` checks membership.
