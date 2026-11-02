@@ -54,6 +54,7 @@ The repository includes a runnable [basic example](examples/basic.py). To see a 
 - `expect_is(actual, expected, message=None)` checks object identity. `expect_none(actual, message=None)` and `expect_not_none(actual, message=None)` check for `None`.
 - `expect_instance(actual, expected_type, message=None)` checks with `isinstance`; `expect_type(actual, expected_type, message=None)` checks the exact type.
 - `expect_true(actual, message=None)` and `expect_false(actual, message=None)` check truthiness.
+- `expect_error_message(error, substring, message=None)` checks a substring of `str(error)`.
 - `expect_raises(ExceptionType, message=None)` is a context manager usable with `with` or `async with` for code expected to raise an exception. The matching exception is available as `context.exception`.
 - `fail(message="Explicit failure")` fails the current case directly.
 - `run_tests(cases, *, name_filter=None, tag_filter=None, fail_fast=False, before_each=None, after_each=None)` runs synchronous cases and hooks.

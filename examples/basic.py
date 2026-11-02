@@ -6,6 +6,7 @@ from puffintest import (
     expect_equal,
     expect_instance,
     expect_empty,
+    expect_error_message,
     expect_length_between,
     expect_not_empty,
     expect_not_contains,
@@ -36,6 +37,7 @@ def parser_reports_bad_input():
         int("not a number")
     expect_instance(raised.exception, ValueError)
     expect_contains(str(raised.exception), "invalid literal")
+    expect_error_message(raised.exception, "invalid literal")
 
 
 @test_cases([(0, 0), (1, 2), (-1, -2)], name="doubling", tags=("math", "fast"))

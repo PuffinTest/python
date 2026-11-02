@@ -510,3 +510,21 @@ def expect_raises(
     if not isinstance(exception_type, type) or not issubclass(exception_type, Exception):
         raise TypeError("exception_type must be an Exception subclass")
     return _RaisesContext(exception_type, message)
+
+
+def expect_error_message(
+    error: BaseException, substring: str, message: str | None = None
+) -> None:
+    """Fail unless ``substring`` occurs in ``str(error)``."""
+    if not isinstance(error, BaseException):
+        raise TypeError("error must be an exception")
+    if not isinstance(substring, str):
+        raise TypeError("substring must be a string")
+    actual = str(error)
+    if substring not in actual:
+        _raise_failure(
+            message or "Error message does not contain the expected text",
+            expected=f"error message containing {substring!r}",
+            actual=actual,
+            has_values=True,
+        )
