@@ -213,6 +213,25 @@ def expect_between(
         )
 
 
+def expect_not_between(
+    actual: float,
+    minimum: float,
+    maximum: float,
+    message: str | None = None,
+) -> None:
+    """Fail if ``actual`` is in the inclusive ``minimum`` to ``maximum`` range."""
+    if not minimum <= maximum:
+        raise ValueError("minimum must be less than or equal to maximum")
+    if actual < minimum or actual > maximum:
+        return
+    _raise_failure(
+        message or "Value is inside the unexpected range",
+        expected=f"outside [{minimum!r}, {maximum!r}]",
+        actual=actual,
+        has_values=True,
+    )
+
+
 def expect_greater_than(actual: float, threshold: float, message: str | None = None) -> None:
     """Fail unless ``actual`` is strictly greater than ``threshold``."""
     if not actual > threshold:
